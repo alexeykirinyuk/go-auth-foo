@@ -1,0 +1,17 @@
+<div>
+    <form method="POST">
+        <label for="title">Title:</label><br/>
+        <input id="title" type="text" name="title" required><br/>
+
+        <label for="description">Description:</label><br/>
+        <input id="description" type="text" name="description"><br/>
+
+        <label for="address">Address:</label><br/>
+        <input id="address" type="text" name="address" required><br/>
+
+        <label for="opening-date">Opening Date:</label><br/>
+        <input id="opening-date" type="date" name="address"><br/>
+
+        <input type="submit">
+    </form>
+</div>
