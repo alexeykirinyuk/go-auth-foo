@@ -1,4 +1,4 @@
-package models
+package auth
 
 import (
 	"github.com/google/uuid"
@@ -80,7 +80,7 @@ func (u *User) PutConfirmSelector(selector string) {
 	u.ConfirmedSelector = selector
 }
 
-func (u* User) PutConfirmVerifier(verifier string) {
+func (u*User) PutConfirmVerifier(verifier string) {
 	u.ConfirmedVerifier = verifier
 }
 

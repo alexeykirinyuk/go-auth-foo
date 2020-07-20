@@ -1,8 +1,8 @@
-package models
+package sigma
 
 import "github.com/google/uuid"
 
-type Sigma struct {
+type sigma struct {
 	Id uuid.UUID
 
 	Info string

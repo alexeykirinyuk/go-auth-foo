@@ -1,11 +1,11 @@
-package models
+package bar
 
 import (
 	"github.com/google/uuid"
 	"time"
 )
 
-type Bar struct {
+type bar struct {
 	Id uuid.UUID
 
 	Title string
