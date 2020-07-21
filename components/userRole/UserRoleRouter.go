@@ -14,7 +14,7 @@ const userTemplateBasePath = "components/userRole/templates/"
 
 func ConfigureRouter(mux *chi.Mux, boss *authboss.Authboss, dbProvider data.IDatabaseProvider) {
 	mux.Group(func(r chi.Router) {
-		libs.ConfigureAuthMiddleware(mux, boss, auth.RoleAdmin)
+		libs.ConfigureAuthMiddleware(r, boss, auth.RoleAdmin)
 		configure(r, dbProvider)
 	})
 }

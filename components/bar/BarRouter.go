@@ -16,7 +16,7 @@ const barTemplateBasePath = "components/bar/templates"
 
 func ConfigureRouter(mux *chi.Mux, boss *authboss.Authboss, dbProvider data.IDatabaseProvider) {
 	mux.Group(func(r chi.Router) {
-		libs.ConfigureAuthMiddleware(mux, boss, auth.RoleMember, auth.RoleAdmin)
+		libs.ConfigureAuthMiddleware(r, boss, auth.RoleMember, auth.RoleAdmin)
 		configure(r, dbProvider)
 	})
 }
@@ -108,7 +108,7 @@ func extractBarFromFormData(r *http.Request, id uuid.UUID) bar {
 	}
 
 	openingDate, err := time.Parse("test-layout", r.FormValue("opening_date"))
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 

@@ -1,4 +1,4 @@
-package main
+package mainPage
 
 import (
 	"github.com/alexeykirinyuk/tech-task-go/libs"
@@ -6,10 +6,10 @@ import (
 	"net/http"
 )
 
-const baseTemplatePath = "views/"
+const baseTemplatePath = "components/mainPage/"
 
-func configureMainPageRouter(mux *chi.Mux) {
+func ConfigureRouter(mux *chi.Mux) {
 	mux.MethodFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
-		libs.Render(w, r, baseTemplatePath+"main.tpl", nil)
+		libs.Render(w, r, baseTemplatePath+"mainPage.tpl", nil)
 	})
 }
