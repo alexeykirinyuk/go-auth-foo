@@ -17,8 +17,6 @@ func newStorage(dbProvider data.IDatabaseProvider) barStorage {
 		panic(err)
 	}
 
-	db.AutoMigrate(&bar{})
-
 	return barStorage{db: db}
 }
 
