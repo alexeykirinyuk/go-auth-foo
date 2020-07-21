@@ -7,15 +7,17 @@ import (
 )
 
 type PostgreSqlDatabaseProvider struct {
+	connectionString string
 }
 
-func NewProvider() PostgreSqlDatabaseProvider  {
-	return PostgreSqlDatabaseProvider{}
+func NewProvider(connectionString string) PostgreSqlDatabaseProvider {
+	return PostgreSqlDatabaseProvider{
+		connectionString: connectionString,
+	}
 }
 
 func (p PostgreSqlDatabaseProvider) CreateConnection() (grm *gorm.DB, err error) {
-	// TODO: move connection pattern string to configuration file
-	grm, err = gorm.Open("postgres", "host=localhost port=5432 templates=postgres dbname=fun password=postgres sslmode=disable")
+	grm, err = gorm.Open("postgres", p.connectionString)
 	if err != nil {
 		err = fmt.Errorf("error when try to connect to postgresql db: %s", err)
 		return
