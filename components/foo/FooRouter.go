@@ -11,17 +11,22 @@ import (
 	"net/http"
 )
 
-const fooTemplateBasePath = "components/foo/templates"
+const (
+	fooTemplateBasePath = "components/foo/templates/"
+	baseRoute           = "/foo"
+)
 
 func ConfigureRouter(mux *chi.Mux, boss *authboss.Authboss, dbProvider data.IDatabaseProvider) {
 	mux.Group(func(r chi.Router) {
 		libs.ConfigureAuthMiddleware(r, boss, auth.RoleMember, auth.RoleAdmin)
-		configure(mux, dbProvider)
+		r.Route("/foo", func(r1 chi.Router) {
+			configure(r1, dbProvider)
+		})
 	})
 }
 
 func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
-	r.MethodFunc("GET", "/foo", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
 		fooStorage := newStorage(dbProvider)
 
 		items, err := fooStorage.getAll()
@@ -29,12 +34,12 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 			panic(err)
 		}
 
-		libs.Render(w, r, fooTemplateBasePath+"view.tpl", items)
+		libs.Render(w, fooTemplateBasePath+"view.tpl", items)
 	})
-	r.MethodFunc("GET", "/foo/create", func(w http.ResponseWriter, r *http.Request) {
-		libs.Render(w, r, "views/foo/create.tpl", nil)
+	r.MethodFunc("GET", "/create", func(w http.ResponseWriter, r *http.Request) {
+		libs.Render(w, fooTemplateBasePath+"create.tpl", nil)
 	})
-	r.MethodFunc("POST", "/foo/create", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("POST", "/create", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		foo := extractFooFromFormData(r)
@@ -47,7 +52,7 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 
 		redirectToAllFoo(w, r)
 	})
-	r.MethodFunc("POST", "/foo/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("POST", "/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -63,7 +68,7 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 
 		redirectToAllFoo(w, r)
 	})
-	r.MethodFunc("GET", "/foo/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("GET", "/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -77,9 +82,9 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 			return
 		}
 
-		libs.Render(w, r, fooTemplateBasePath+"update.tpl", foo)
+		libs.Render(w, fooTemplateBasePath+"update.tpl", foo)
 	})
-	r.MethodFunc("POST", "/foo/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("POST", "/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -125,5 +130,5 @@ func extractIdFromRouteParameters(w http.ResponseWriter, r *http.Request) (id uu
 }
 
 func redirectToAllFoo(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/foo", http.StatusMovedPermanently)
+	http.Redirect(w, r, baseRoute, http.StatusMovedPermanently)
 }

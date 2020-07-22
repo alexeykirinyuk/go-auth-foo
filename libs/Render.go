@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func Render(w http.ResponseWriter, r *http.Request, templatePath string, data interface{}) {
+func Render(w http.ResponseWriter, templatePath string, data interface{}) {
 	content, err := read(templatePath)
 	if err != nil {
 		panic(err)
@@ -31,8 +31,7 @@ func read(filePath string) (content string, err error) {
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			// TODO
-			panic("")
+			panic(err)
 		}
 	}()
 

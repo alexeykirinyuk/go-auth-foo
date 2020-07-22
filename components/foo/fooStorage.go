@@ -31,7 +31,6 @@ func (f fooStorage) add(foo foo) error {
 func (f fooStorage) getById(id uuid.UUID) (foo foo, err error) {
 	err = f.db.First(&foo, "id = ?", id).Error
 	if err != nil {
-		err = fmt.Errorf("error when trying get foo by Id: %s", err)
 		return
 	}
 

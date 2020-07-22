@@ -9,8 +9,8 @@
         <label for="address">Address:</label><br/>
         <input id="address" type="text" name="address" required value="{{.Address}}"><br/>
 
-        <label for="opening-date">Opening Date:</label><br/>
-        <input id="opening-date" type="date" name="address" value="{{.OpeningDate}}"><br/>
+        <label for="opening_date">Opening Date:</label><br/>
+        <input id="opening_date" type="date" name="opening_date" value="{{.OpeningDate}}"><br/>
 
         <input type="submit">
     </form>

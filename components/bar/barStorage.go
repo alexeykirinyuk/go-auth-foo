@@ -39,9 +39,8 @@ func (f barStorage) getAll() (items []bar, err error) {
 }
 
 func (f barStorage) getById(id uuid.UUID) (Bar bar, err error) {
-	err = f.db.First(&Bar, id).Error
+	err = f.db.First(&Bar, "id = ?", id).Error
 	if err != nil {
-		err = fmt.Errorf("error when trying get templates by Id: %s", err)
 		return
 	}
 

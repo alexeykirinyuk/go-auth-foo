@@ -12,17 +12,22 @@ import (
 	"time"
 )
 
-const barTemplateBasePath = "components/bar/templates"
+const (
+	barTemplateBasePath = "components/bar/templates/"
+	baseRoute           = "/bar"
+)
 
 func ConfigureRouter(mux *chi.Mux, boss *authboss.Authboss, dbProvider data.IDatabaseProvider) {
 	mux.Group(func(r chi.Router) {
 		libs.ConfigureAuthMiddleware(r, boss, auth.RoleMember, auth.RoleAdmin)
-		configure(r, dbProvider)
+		r.Route(baseRoute, func(r1 chi.Router) {
+			configure(r1, dbProvider)
+		})
 	})
 }
 
 func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
-	r.MethodFunc("GET", "/templates", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
 		barStorage := newStorage(dbProvider)
 
 		items, err := barStorage.getAll()
@@ -30,12 +35,12 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 			panic(err)
 		}
 
-		libs.Render(w, r, barTemplateBasePath+"view.tpl", items)
+		libs.Render(w, barTemplateBasePath+"view.tpl", items)
 	})
-	r.MethodFunc("GET", "/templates/create", func(w http.ResponseWriter, r *http.Request) {
-		libs.Render(w, r, "views/templates/create.tpl", nil)
+	r.MethodFunc("GET", "/create", func(w http.ResponseWriter, r *http.Request) {
+		libs.Render(w, barTemplateBasePath+"create.tpl", nil)
 	})
-	r.MethodFunc("POST", "/templates/create", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("POST", "/create", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		bar := extractBarFromFormData(r, uuid.New())
@@ -48,7 +53,7 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 
 		redirectToAllBar(w, r)
 	})
-	r.MethodFunc("POST", "/templates/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("POST", "/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -64,7 +69,7 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 
 		redirectToAllBar(w, r)
 	})
-	r.MethodFunc("GET", "/templates/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("GET", "/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -78,9 +83,9 @@ func configure(r chi.Router, dbProvider data.IDatabaseProvider) {
 			return
 		}
 
-		libs.Render(w, r, barTemplateBasePath+"update.tpl", foo)
+		libs.Render(w, barTemplateBasePath+"update.tpl", foo)
 	})
-	r.MethodFunc("POST", "/templates/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	r.MethodFunc("POST", "/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -107,7 +112,8 @@ func extractBarFromFormData(r *http.Request, id uuid.UUID) bar {
 		panic(err)
 	}
 
-	openingDate, err := time.Parse("test-layout", r.FormValue("opening_date"))
+	openingDateStr := r.FormValue("opening_date")
+	openingDate, err := time.Parse("2006-01-02", openingDateStr)
 	if err != nil {
 		panic(err)
 	}
@@ -133,5 +139,5 @@ func extractIdFromRouteParameters(w http.ResponseWriter, r *http.Request) (id uu
 }
 
 func redirectToAllBar(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/templates", http.StatusMovedPermanently)
+	http.Redirect(w, r, "/bar", http.StatusMovedPermanently)
 }

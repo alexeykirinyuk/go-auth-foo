@@ -1,7 +1,7 @@
 <div>
     <form method="POST">
-        <label for="title">Info:</label><br/>
-        <input id="title" type="text" name="title" value="{{.Info}}" required><br/>
+        <label for="info">Info:</label><br/>
+        <input id="info" type="text" name="info" value="{{.Info}}" required><br/>
 
         <input type="submit">
     </form>

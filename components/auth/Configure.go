@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/alexeykirinyuk/tech-task-go/data"
 	"github.com/go-chi/chi"
 	"github.com/gorilla/sessions"
@@ -16,7 +17,9 @@ import (
 
 const sessionCookieName = "boss_session"
 
-func ConfigureAuth(provider data.IDatabaseProvider) (boss *authboss.Authboss, err error) {
+const viewsPath = "components/auth/views"
+
+func ConfigureAuth(provider data.IDatabaseProvider, port int) (boss *authboss.Authboss, err error) {
 	boss = authboss.New()
 
 	boss.Config.Storage.Server = NewServerStore(provider)
@@ -33,12 +36,11 @@ func ConfigureAuth(provider data.IDatabaseProvider) (boss *authboss.Authboss, er
 	boss.Config.Storage.SessionState = sessionStore
 
 	boss.Config.Paths.Mount = "/auth"
-	boss.Config.Paths.RootURL = "http://localhost:5000"
+	boss.Config.Paths.RootURL = fmt.Sprintf("http://localhost:%d", port)
 	boss.Config.Modules.ResponseOnUnauthed = authboss.RespondRedirect
 
-	boss.Config.Core.ViewRenderer = abrenderer.NewHTML("/auth", "views")
-	boss.Config.Core.MailRenderer = abrenderer.NewHTML("/auth", "views")
-	boss.Config.Modules.RegisterPreserveFields = []string{"email", "name"}
+	boss.Config.Core.ViewRenderer = abrenderer.NewHTML("/auth", viewsPath)
+	boss.Config.Core.MailRenderer = abrenderer.NewHTML("/auth", viewsPath)
 
 	defaults.SetCore(&boss.Config, true, false)
 
@@ -81,13 +83,13 @@ func configureBodyReader(boss *authboss.Authboss) {
 
 func createRequiredRule(field string, minLength int) defaults.Rules {
 	return defaults.Rules{
-		FieldName: "last_name",
+		FieldName: field,
 		Required:  true,
 		MinLength: minLength,
 	}
 }
 
-func ConfigureMiddleware(mux *chi.Mux, boss *authboss.Authboss)  {
+func ConfigureMiddleware(mux *chi.Mux, boss *authboss.Authboss) {
 	mux.Use(boss.LoadClientStateMiddleware)
 	mux.Mount("/auth", http.StripPrefix("/auth", boss.Config.Core.Router))
 }

@@ -1,11 +1,16 @@
 <div>
     <form method="POST">
-        <h1>User: {{.FirstName}}  {{.LastName}} ({{.Email}})</h1>
+        <h1>User: {{.User.FirstName}}  {{.User.LastName}} ({{.User.Email}})</h1>
 
         <label for="role">Role:</label><br/>
         <select id="role" name="role">
-            <option value="Member">Member</option>
-            <option value="Admin">Admin</option>
+            {{range $role := .Roles}}
+                {{if $role.Selected}}
+                    <option value="{{$role.Name}}" selected>{{$role.Name}}</option>
+                {{else}}
+                    <option value="{{$role.Name}}">{{$role.Name}}</option>
+                {{end}}
+            {{end}}
         </select>
 
         <input type="submit">

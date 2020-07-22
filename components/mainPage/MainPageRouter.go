@@ -10,6 +10,6 @@ const baseTemplatePath = "components/mainPage/"
 
 func ConfigureRouter(mux *chi.Mux) {
 	mux.MethodFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
-		libs.Render(w, r, baseTemplatePath+"mainPage.tpl", nil)
+		libs.Render(w, baseTemplatePath+"main.tpl", nil)
 	})
 }

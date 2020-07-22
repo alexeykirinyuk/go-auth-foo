@@ -11,17 +11,22 @@ import (
 	"net/http"
 )
 
-const sigmaTemplateBasePath = "components/sigma/templates"
+const (
+	sigmaTemplateBasePath = "components/sigma/templates/"
+	baseRoute             = "/sigma"
+)
 
 func ConfigureRouter(mux *chi.Mux, boss *authboss.Authboss, dbProvider data.IDatabaseProvider) {
 	mux.Group(func(r chi.Router) {
-		libs.ConfigureAuthMiddleware(r, boss, auth.RoleMember, auth.RoleAdmin)
-		configure(mux, dbProvider)
+		libs.ConfigureAuthMiddleware(r, boss, auth.RoleAdmin)
+		r.Route(baseRoute, func(r1 chi.Router) {
+			configure(r1, dbProvider)
+		})
 	})
 }
 
-func configure(mux *chi.Mux, dbProvider data.IDatabaseProvider) {
-	mux.MethodFunc("GET", "/sigma", func(w http.ResponseWriter, r *http.Request) {
+func configure(mux chi.Router, dbProvider data.IDatabaseProvider) {
+	mux.MethodFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
 		sigmaStorage := newStorage(dbProvider)
 
 		items, err := sigmaStorage.getAll()
@@ -29,12 +34,12 @@ func configure(mux *chi.Mux, dbProvider data.IDatabaseProvider) {
 			panic(err)
 		}
 
-		libs.Render(w, r, sigmaTemplateBasePath+"view.tpl", items)
+		libs.Render(w, sigmaTemplateBasePath+"view.tpl", items)
 	})
-	mux.MethodFunc("GET", "/sigma/create", func(w http.ResponseWriter, r *http.Request) {
-		libs.Render(w, r, "views/sigma/create.tpl", nil)
+	mux.MethodFunc("GET", "/create", func(w http.ResponseWriter, r *http.Request) {
+		libs.Render(w, sigmaTemplateBasePath+"create.tpl", nil)
 	})
-	mux.MethodFunc("POST", "/sigma/create", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("POST", "/create", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		sigma := extractSigmaFromFormData(r)
@@ -47,7 +52,7 @@ func configure(mux *chi.Mux, dbProvider data.IDatabaseProvider) {
 
 		redirectToAllSigma(w, r)
 	})
-	mux.MethodFunc("POST", "/sigma/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("POST", "/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -63,7 +68,7 @@ func configure(mux *chi.Mux, dbProvider data.IDatabaseProvider) {
 
 		redirectToAllSigma(w, r)
 	})
-	mux.MethodFunc("GET", "/sigma/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("GET", "/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)
@@ -77,9 +82,9 @@ func configure(mux *chi.Mux, dbProvider data.IDatabaseProvider) {
 			return
 		}
 
-		libs.Render(w, r, sigmaTemplateBasePath+"update.tpl", sigma)
+		libs.Render(w, sigmaTemplateBasePath+"update.tpl", sigma)
 	})
-	mux.MethodFunc("POST", "/sigma/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("POST", "/update/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := extractIdFromRouteParameters(w, r)

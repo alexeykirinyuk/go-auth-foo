@@ -10,17 +10,32 @@ import (
 	"net/http"
 )
 
-const userTemplateBasePath = "components/userRole/templates/"
+const (
+	userTemplateBasePath = "components/userRole/templates/"
+	baseRoute            = "/user"
+)
+
+type updateViewModel struct {
+	User  userRole
+	Roles []roleViewModel
+}
+
+type roleViewModel struct {
+	Name     string
+	Selected bool
+}
 
 func ConfigureRouter(mux *chi.Mux, boss *authboss.Authboss, dbProvider data.IDatabaseProvider) {
 	mux.Group(func(r chi.Router) {
 		libs.ConfigureAuthMiddleware(r, boss, auth.RoleAdmin)
-		configure(r, dbProvider)
+		r.Route(baseRoute, func(r1 chi.Router) {
+			configure(r1, dbProvider)
+		})
 	})
 }
 
 func configure(mux chi.Router, dbProvider data.IDatabaseProvider) {
-	mux.MethodFunc("GET", "/templates", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("GET", "/", func(w http.ResponseWriter, r *http.Request) {
 		userRoleStorage := newStorage(dbProvider)
 
 		items, err := userRoleStorage.getAll()
@@ -28,9 +43,9 @@ func configure(mux chi.Router, dbProvider data.IDatabaseProvider) {
 			panic(err)
 		}
 
-		libs.Render(w, r, userTemplateBasePath+"view.tpl", items)
+		libs.Render(w, userTemplateBasePath+"view.tpl", items)
 	})
-	mux.MethodFunc("GET", "/templates/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("GET", "/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := getIdFromRouteParameter(w, r)
@@ -44,9 +59,24 @@ func configure(mux chi.Router, dbProvider data.IDatabaseProvider) {
 			return
 		}
 
-		libs.Render(w, r, userTemplateBasePath+"update.tpl", item)
+		isAdmin := item.Role == RoleAdmin
+		viewModel := &updateViewModel{
+			User: item,
+			Roles: []roleViewModel{
+				{
+					Name:     RoleAdmin,
+					Selected: isAdmin,
+				},
+				{
+					Name:     RoleMember,
+					Selected: !isAdmin,
+				},
+			},
+		}
+
+		libs.Render(w, userTemplateBasePath+"update.tpl", viewModel)
 	})
-	mux.MethodFunc("POST", "/templates/update/{id}", func(w http.ResponseWriter, r *http.Request) {
+	mux.MethodFunc("POST", "/{id}", func(w http.ResponseWriter, r *http.Request) {
 		service := newService(dbProvider)
 
 		id, ok := getIdFromRouteParameter(w, r)
@@ -82,5 +112,5 @@ func getIdFromRouteParameter(w http.ResponseWriter, r *http.Request) (id uuid.UU
 }
 
 func redirectToAllUser(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/templates", http.StatusMovedPermanently)
+	http.Redirect(w, r, baseRoute, http.StatusMovedPermanently)
 }

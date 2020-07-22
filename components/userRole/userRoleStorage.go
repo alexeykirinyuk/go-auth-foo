@@ -7,18 +7,21 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type userRole struct {
-	Id uuid.UUID
-	FirstName string
-	LastName string
-	Role string
-}
-
 type userRoleStorage struct {
 	db *gorm.DB
 }
 
-const tableName = "user"
+type userRole struct {
+	Id uuid.UUID
+
+	FirstName string
+	LastName  string
+	Role      string
+
+	Email string
+}
+
+const tableName = "users"
 
 func newStorage(dbProvider data.IDatabaseProvider) userRoleStorage {
 	db, err := dbProvider.CreateConnection()
@@ -30,8 +33,7 @@ func newStorage(dbProvider data.IDatabaseProvider) userRoleStorage {
 }
 
 func (u userRoleStorage) getById(id uuid.UUID) (item userRole, err error) {
-	if err = u.db.Table(tableName).First(item, "id = ?", id).Error; err != nil {
-		err = fmt.Errorf("error when trying get templates by id: %s", err)
+	if err = u.db.Table(tableName).First(&item, "id = ?", id).Error; err != nil {
 		return
 	}
 
@@ -49,7 +51,7 @@ func (u userRoleStorage) getAll() (items []userRole, err error) {
 }
 
 func (u userRoleStorage) updateRole(id uuid.UUID, role string) error {
-	if err := u.db.Table("user").Set("role", role).Error; err != nil {
+	if err := u.db.Table(tableName).Where("id = ?", id).Update("role", role).Error; err != nil {
 		return fmt.Errorf("error when trying update templates with ID %s: %s", id, err)
 	}
 

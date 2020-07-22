@@ -20,8 +20,8 @@ func newStorage(dbProvider data.IDatabaseProvider) sigmaStorage {
 	return sigmaStorage{db: db}
 }
 
-func (s sigmaStorage) add(Sigma sigma) error {
-	if err := s.db.Create(Sigma).Error; err != nil {
+func (s sigmaStorage) add(sig sigma) error {
+	if err := s.db.Create(&sig).Error; err != nil {
 		return fmt.Errorf("error when trying crete new sigma: %s", err)
 	}
 
@@ -38,26 +38,25 @@ func (f sigmaStorage) getAll() (items []sigma, err error) {
 	return
 }
 
-func (s sigmaStorage) getById(id uuid.UUID) (Sigma sigma, err error) {
-	err = s.db.First(&Sigma, id).Error
+func (s sigmaStorage) getById(id uuid.UUID) (item sigma, err error) {
+	err = s.db.First(&item, "id = ?", id).Error
 	if err != nil {
-		err = fmt.Errorf("error when trying get sigma by Id: %s", err)
 		return
 	}
 
 	return
 }
 
-func (s sigmaStorage) update(Sigma sigma) error {
-	if err := s.db.Update(Sigma).Error; err != nil {
-		return fmt.Errorf("error when trying update sigma with ID %s: %s", Sigma.Id, err)
+func (s sigmaStorage) update(sig sigma) error {
+	if err := s.db.Save(&sig).Error; err != nil {
+		return fmt.Errorf("error when trying update sigma with ID %s: %s", sig.Id, err)
 	}
 
 	return nil
 }
 
 func (s sigmaStorage) delete(id uuid.UUID) error {
-	if err := s.db.Where("id = ?", id).Delete(&sigma{}); err != nil {
+	if err := s.db.Where("id = ?", id).Delete(&sigma{}).Error; err != nil {
 		return fmt.Errorf("error when trying delete sigma with ID %s: %s", id, err)
 	}
 

@@ -1,6 +1,6 @@
 <script>
     function updateItem(id) {
-        window.location.href = "/user/update/" + id;
+        window.location.href = "/user/" + id;
     }
 </script>
 <div>

@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func ConfigureAuthMiddleware(r chi.Router, boss *authboss.Authboss, roles ...string)  {
+func ConfigureAuthMiddleware(r chi.Router, boss *authboss.Authboss, roles ...string) {
 	r.Use(authboss.Middleware2(boss, authboss.RequireNone, authboss.RespondUnauthorized))
 	r.Use(lock.Middleware(boss))
 	r.Use(confirm.Middleware(boss))
@@ -22,19 +22,19 @@ func roleMiddleware(b *authboss.Authboss, roles []string) func(http.Handler) htt
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			u, err := b.LoadCurrentUser(&r)
 			if err != nil {
-				// TODO
-				panic(err)
+				NotAuthorized(w, r, "Please, log in.")
+				return
 			}
 
 			user, ok := u.(*auth.User)
 			if !ok {
-				// TODO
-				panic(fmt.Errorf("test error"))
+				panic("Fatal error: can't cast authboss.User to auth.User type.")
 			}
 
 			if !hasRole(user, roles) {
-				// TODO
-				panic(fmt.Errorf("test error"))
+				msg := fmt.Sprintf("User with ID '%s' doesn't have permissions to use this resource.", user.Id)
+				NotAuthorized(w, r, msg)
+				return
 			}
 
 			next.ServeHTTP(w, r)

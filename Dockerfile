@@ -5,6 +5,6 @@ ADD . /app
 WORKDIR /app
 
 RUN go mod download
-RUN go build -o main src/cmd.go
+RUN go build -o go-auth-foo-cmd main/cmd.go main/migrations.go main/routes.go
 
-CMD ["/app/main"]
+CMD ["/app/go-auth-foo-cmd"]
